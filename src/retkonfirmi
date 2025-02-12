@@ -9,7 +9,7 @@ LOG_DIR="$HOME"
 
 # Help message
 help_message() {
-    echo "Usage: website_status_checker.zsh [OPTIONS]"
+    echo "Usage: retkonfirmi [OPTIONS]"
     echo
     echo "This script checks the status of a website and prints if it is up or down."
     echo
@@ -22,7 +22,7 @@ help_message() {
     echo "  --help             Display this help message and exit."
     echo
     echo "Example:"
-    echo "  ./website_status_checker.zsh --interval 30 --log --logdir /tmp"
+    echo "  ./retkonfirmi --interval 30 --log --logdir /tmp"
     echo
 }
 
@@ -62,7 +62,7 @@ if [[ $URL != http* ]]; then
 fi
 
 # Format log filename
-LOG_FILE="website_status_checker_$(echo $URL | sed 's|http[s]*://||' | tr '/' '_').log"
+LOG_FILE="retkonfirmi_$(echo $URL | sed 's|http[s]*://||' | tr '/' '_').log"
 LOG_PATH="$LOG_DIR/.`date '+%Y-%m-%dT%H:%M:%S'`_$LOG_FILE"
 
 # Function to log status

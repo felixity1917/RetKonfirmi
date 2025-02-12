@@ -1,7 +1,7 @@
 # RetKonfirmi
 RetKonfirmi (EN: Lit., Web-Confirm) is a ZSH Script that checks for and confirms the status of a website/page on whether it is up or not.
 
-Usage: `website_status_checker.zsh [OPTIONS]`
+Usage: `retkonfirmi [OPTIONS]`
 
 This script checks the status of a website and prints if it is up or down.
 
@@ -17,5 +17,5 @@ This script checks the status of a website and prints if it is up or down.
 
 # Example:
 ```
-  ./website_status_checker.zsh --interval 30 --log --logdir /tmp
+  ./retkonfirmi --interval 30 --log --logdir /tmp
 ```
