@@ -1,0 +1,126 @@
+#!/bin/zsh
+
+# Default values
+INTERVAL=15
+SHOW_TIME=true
+USE_COLOR=true
+LOG_ENABLED=false
+LOG_DIR="$HOME"
+
+# Help message
+help_message() {
+    echo "Usage: website_status_checker.zsh [OPTIONS]"
+    echo
+    echo "This script checks the status of a website and prints if it is up or down."
+    echo
+    echo "Options:"
+    echo "  --hide_time        Hide the timestamp in the output."
+    echo "  --monochrome       Disable colored output."
+    echo "  --interval <sec>   Set the check interval in seconds (default: 15 seconds)."
+    echo "  --log              Enable logging of messages to a log file."
+    echo "  --logdir <path>    Specify a custom directory for logs (default: \$HOME)."
+    echo "  --help             Display this help message and exit."
+    echo
+    echo "Example:"
+    echo "  ./website_status_checker.zsh --interval 30 --log --logdir /tmp"
+    echo
+}
+
+# Parse optional flags
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --hide_time) SHOW_TIME=false ;;
+        --monochrome) USE_COLOR=false ;;
+        --interval)
+            INTERVAL=$2
+            shift
+            ;;
+        --log) LOG_ENABLED=true ;;
+        --logdir)
+            LOG_DIR=$2
+            shift
+            ;;
+        --help)
+            help_message
+            exit 0
+            ;;
+        *) echo "Unknown option: $1"
+           help_message
+           exit 1
+           ;;
+    esac
+    shift
+done
+
+# Get website URL from user input
+echo -n "Enter website URL (e.g., www.example.com): "
+read URL
+
+# Add protocol if not provided by user
+if [[ $URL != http* ]]; then
+    URL="http://$URL"
+fi
+
+# Format log filename
+LOG_FILE="website_status_checker_$(echo $URL | sed 's|http[s]*://||' | tr '/' '_').log"
+LOG_PATH="$LOG_DIR/.`date '+%Y-%m-%dT%H:%M:%S'`_$LOG_FILE"
+
+# Function to log status
+log_message() {
+    local message=$1
+    if [[ $LOG_ENABLED == true ]]; then
+        echo "$message" >> "$LOG_PATH"
+    fi
+}
+
+# Function to print and log status
+print_status() {
+    local message=$1
+    local up=$2
+
+    # Get the current time
+    local current_time=$(date "+%Y-%m-%d %H:%M:%S")
+
+    if [[ $USE_COLOR == true ]]; then
+        if [[ $up == true ]]; then
+            message="\e[32m<Website is Up>\e[0m"   # Green text
+        else
+            message="\e[31m<Website is Down>\e[0m" # Red text
+        fi
+    else
+        if [[ $up == true ]]; then
+            message="<Website is Up>"
+        else
+            message="<Website is Down>"
+        fi
+    fi
+
+    if [[ $SHOW_TIME == true ]]; then
+        output="[$current_time] $message"
+    else
+        output="$message"
+    fi
+
+    # Print the message
+    echo -e "$output"
+
+    # Log the message if logging is enabled
+    log_message "$output"
+}
+
+# Function to check if website is up
+check_website() {
+    if curl -s --head --location --max-redirs 10 "$URL" | grep -E "HTTP/[0-9\.]+ 2[0-9]{2}" > /dev/null; then
+        print_status "$URL" true
+        return 0
+    else
+        print_status "$URL" false
+        return 1
+    fi
+}
+
+# Keep checking the website at the specified interval
+while true; do
+    check_website
+    sleep $INTERVAL
+done
